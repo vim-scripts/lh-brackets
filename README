@@ -1,0 +1,25 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=50
+
+Here is an archive containing different functions and commands aimed at (ft)plugins
+developpers.
+
+You fill find :
+- functions to define context dependent mappings : i.e. mappings that won't expand
+  within comment or string context -> MapNoContext() & MapNoContext2()
+- a function that insert a pair of tokens around a visual area -> MapAroundVisualLine()
+- a function that expands mappings contained into strings -> BuildMapSeq()
+- commands that eats the <spaces> you hit at the end of abbreviations
+
+- a set of definitions to insert markers and jump to them (derived from Stephen 
+  Riehm bracketing system) ; the markers can be customized, erased or deleted, 
+  etc.
+
+- my bracketing system : through a set of buffer-relative options, we can activate 
+  (and tune) the insertion of pairs of brackets when we hit the opening bracket. It 
+  works in insert, normal and visual modes. If markers are available and wanted, 
+  they will be inserted in insert-mode.
+  It also proposes functions (from auctex.vim) that delete pairs of brackets, 
+  change them (to '{}', '()', or '[]'), toogle backslashes, etc.
+
+You fill found a much more complete documentation and examples within the archive, and there:
+http://hermitte.free.fr/vim/settings.php#brackets
