@@ -1,12 +1,12 @@
 " File:		misc_map.vim
-" Author:	Luc Hermitte <MAIL:hermitte@free.fr>
+" Author:	Luc Hermitte <MAIL:hermitte {at} free {dot} fr>
 " 		<URL:http://hermitte.free.fr/vim/>
-" Last Update:	28th mar 2002
+" Last Update:	21st jul 2002
 "
 " Purpose:	Several mapping oriented functions
 "
 "---------------------------------------------------------------------------
-" Function:	MapNoContext( key, sequence)
+" Function:	MapNoContext( key, sequence)				{{{
 " Purpose:	Regarding the context of the current position of the
 " 		cursor, it returns either the value of key or the
 " 		interpreted value of sequence.
@@ -20,9 +20,9 @@
 " Example:	A mapping of 'if' for C programmation :
 "   inoremap if<space> <C-R>=MapNoContext("if ",
 "   \				'\<c-f\>if () {\<cr\>}\<esc\>?)\<cr\>i')<CR>
-" 
+" }}}
 "---------------------------------------------------------------------------
-" Function:	MapNoContext2( key, sequence)
+" Function:	MapNoContext2( key, sequence)				{{{
 " Purpose:	Exactly the same purpose than MapNoContext(). There is a
 "		slight difference, the previous function is really boring
 "		when we want to use variables like 'tarif' in the code.
@@ -32,17 +32,17 @@
 " Hint:		Use MapNoContext2() for mapping keywords like 'if', etc.
 "		and MapNoContext() for other mappings like parenthesis,
 "		punctuations signs, and so on.
-"
+" }}}
 "---------------------------------------------------------------------------
-" Function:	BuildMapSeq( sequence )
+" Function:	BuildMapSeq( sequence )					{{{
 " Purpose:	This fonction is to be used to generate the sequences used
 " 		by the «MapNoContext» functions. It considers that every
 " 		«¡.*!» pattern is associated to an INSERT-mode mapping and
 " 		expand it.
 " 		It is used to define marked mappings ; cf <c.set>
-"
+" }}}
 "---------------------------------------------------------------------------
-" Function:	MapAroundVisualLines(begin,end,isLine,isIndented) range
+" Function:	MapAroundVisualLines(begin,end,isLine,isIndented) range {{{
 " Purpose:	Ease the definition of visual mappings that add text
 " 		around the selected one.
 " Examples:
@@ -58,25 +58,33 @@
 "         vnoremap == :call MapAroundVisualLines('if','endif',1,1)<cr>
 "       endif
 
-" Problems: 
+" Fixed Problem: 
 " * if a word from 'begin' or 'end' is used as a terminaison of an
-" abbreviation, this function yields to an incorrect behaviour. Use instead
-" mappings ended by '<space>'.
+" abbreviation, this function yields to an incorrect behaviour. 
+" Problems: 
 " * Smartindent is not properly managed. [Vim 5.xx]
 " Todo:
 " * Add a positionning feature -> ?{<cr>a
-
-"
+" }}}
 "===========================================================================
 "
 "---------------------------------------------------------------------------
 " Avoid reinclusion
 if !exists('g:misc_map_loaded')
   let g:misc_map_loaded = 1
+  let cpop = &cpoptions
+  set cpoptions-=C
 "
-"
+if !exists(':Silent') " {{{
+  if version < 600
+    command! -nargs=+ -bang Silent exe "<args>"
+  else
+    command! -nargs=+                -bang Silent silent<bang> <args>
+  endif
+endif
+" }}}
 "---------------------------------------------------------------------------
-function! MapNoContext(key, seq)
+function! MapNoContext(key, seq) " {{{
   let syn = synIDattr(synID(line('.'),col('.')-1,1),'name') 
   if syn =~? '\(comment\)\|\(string\)\|\(character\)'
     return a:key
@@ -86,9 +94,9 @@ function! MapNoContext(key, seq)
       \   substitute( a:seq, '\\<\(.\{-}\)\\>', '"."\\<\1>"."', 'g' ) .  '"'
   endif 
 endfunction
-
+" }}}
 "---------------------------------------------------------------------------
-function! MapNoContext2(key, seq)
+function! MapNoContext2(key, seq) " {{{
   let c = col('.')-1
   let l = line('.')
   let syn = synIDattr(synID(l,c,1),'name') 
@@ -101,9 +109,9 @@ function! MapNoContext2(key, seq)
       \   substitute( a:seq, '\\<\(.\{-}\)\\>', '"."\\<\1>"."', 'g' ) .  '"'
   endif 
 endfunction
-
+" }}}
 "---------------------------------------------------------------------------
-function! BuildMapSeq(seq)
+function! BuildMapSeq(seq) " {{{
   let r = ''
   let s = a:seq
   while strlen(s) != 0 " For every '¡.*!' pattern, extract it
@@ -121,9 +129,11 @@ function! BuildMapSeq(seq)
   exe 'return "' . 
     \   substitute( r, '\\<\(.\{-}\)\\>', '"."\\<\1>"."', 'g' ) .  '"'
 endfunction
-
+" }}}
 "---------------------------------------------------------------------------
-function! MapAroundVisualLines(begin,end,isLine,isIndented) range
+function! MapAroundVisualLines(begin,end,isLine,isIndented) range " {{{
+  let pp = &paste
+  set paste
   " 'H' stands for 'High' ; 'B' stands for 'Bottom' 
   " 'L' stands for 'Left', 'R' for 'Right'
   let HL = "`<i"
@@ -153,10 +163,12 @@ function! MapAroundVisualLines(begin,end,isLine,isIndented) range
   " The substitute is here to compensate a little problem with HTML tags
   Silent exe "normal! gv". BL.substitute(a:end,'>',"\<c-v>>",'').BR.HL.a:begin.HR
   " 'gv' is used to refocus on the current visual zone
-"  call confirm(strtrans( "normal! gv". BL.a:end.BR.HL.a:begin.HR), "&Ok")
+  "  call confirm(strtrans( "normal! gv". BL.a:end.BR.HL.a:begin.HR), "&Ok")
+  let &paste=pp
 endfunction
-
+" }}}
 "---------------------------------------------------------------------------
+" Function: EatChar()	{{{
 " Thanks to the VIM Mailing list
 " NB: To make it work with VIM 5.x, replace the '? :' operator with an 'if
 " then' test.
@@ -170,6 +182,11 @@ command -narg=+ Iabbr execute "iabbr " <q-args>."<C-R>=EatChar('\\s')<CR>"
 command -narg=+ Inoreabbr 
       \ execute "inoreabbr " <q-args>."<C-R>=EatChar('\\s')<CR>"
 
+" }}}
 "---------------------------------------------------------------------------
 " Avoid reinclusion
+  let &cpoptions = cpop
 endif
+
+"===========================================================================
+" vim600: set fdm=marker:
