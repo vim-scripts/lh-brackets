@@ -1,41 +1,11 @@
+"===========================================================================
+" $Id: common_brackets.vim 26 2008-02-15 00:07:34Z luc.hermitte $
 " File:		common_brackets.vim
 " Author:	Luc Hermitte <MAIL:hermitte {at} free {dot} fr>
 " 		<URL:http://hermitte.free.fr/vim/>
-" Last Update:	08th nov 2002
-" History:	{{{
-" Version 3.8:  * Updated to match changes within bracketing.base.vim
-" 		* Markers-mappings moved back to bracketing.base.vim
-" Version 3.7:  * Brackets manipulation mappings for normal mode can be changed
-" 		  They are now <Plug> mappings.
-" 		  Same enhancement for mappings to ¡mark! and ¡jump!
-" Version 3.6c: * Change every 'normal' to 'normal!'
-" Version 3.6b: * address obfuscated for spammers
-" Version 3.6:  * accept default value for b:usemarks
-" Version 3.5:  * add continuation lines support ; cf 'cpoptions'
-" Version 3.4:	* Works correctly when editing several files (like with 
-" 		"vim foo1.x foo2.x").
-" 		* ')' and '}' don't search for the end of the bracket when we
-" 		are within a comment.
-" Version 3.3:	* Add support for \{, \(, \[, \<
-"               * Plus some functions to change the type of brackets and
-"               toggle backslashes before brackets.
-"               Inspired from AucTeX.vim.
-" Version 3.2:	* Bugs fixed with {
-" Version 3.1:	* Triggers.vim and help.vim used, but not required.
-" Version 3.0:	* Pure VIM6
-" Version 2.1a:	* Some little change with the requirements
-" Version 2.1:	* Use b:usemarks in the mapping of curly-brackets
-" Version 2.0:	* Lately, I've discovered (SR) Stephen Riehm's bracketing
-" 		macros and felt in love with the markers feature. So, here is
-" 		the ver 2.x based on his package.
-" 		I still bring an original feature : a centralized way to
-" 		customize these pairs regarding options specified within
-" 		the ftplugins.
-" 		Note that I planned to use this file with my customized
-" 		version of Stephan Riehm's file.
-" 		}}}
-" 
-" Purpose:	{{{
+" Last Update:	$Date: 2008-02-15 01:07:34 +0100 (ven., 15 fÃƒÂ©vr. 2008) $
+" Version:	0.6.0
+" Purpose:      {{{1
 " 		This file defines a function (Brackets) that brings
 " 		together several macros dedicated to insert pairs of
 " 		caracters when the first one is typed. Typical examples are
@@ -43,17 +13,93 @@
 " 		One can choose the macro he wants to activate thanks to the
 " 		buffer-relative options listed below.
 "
-" 		This function is used by different setting files
-" 		(ftplugins) : <vim_set.vim>, <ML_set.vim>, <html_set.vim>,
-" 		<php_set.vim> and <tex_set.vim> -- available on my VIM web
-" 		site.
+" 		This function is used by different ftplugins: <vim_set.vim>,
+" 		<ML_set.vim>, <html_set.vim>, <php_set.vim> and <tex_set.vim>
+" 		-- available on my VIM web site.
 "
 " 		BTW, they can be activated or desactivated by pressing <F9>
 " 		Rem.: exe "noremap" is not yet supported by Triggers.vim
 " 		Hence the trick with the intermediary functions.
-" 		}}}
 "
-" Options:	{{{
+" History:      {{{1
+" Version 0.6.0:
+" 		* UTF-8 bug fix in Brkt_lt(), Brkt_gt(), Brkt_Dquote()
+" 		* New numerotation used in versionning
+" 		* Project Added in SVN
+" Version 0.5.4
+" 		* b:cb_bracket == 2 replaces the previous behavior (==1)
+"                 b:cb_bracket == 1, maps <localleader>[ in normal- and
+"                 visual-modes, which does not mess anymore with vim default
+"                 bindings of [a, [c, [[, [(, ...
+" Version 0.5.3:
+"		* Brackets manipulations support angle brackets
+" Version 0.5.2:
+"		* Triggers.vim can be installed into {rtp}/macros
+" Version 0.5.1:
+"		* Fix a small bug when editing vimL files.
+" Version 0.5.0:
+"		* Compatible with Srinath Avadhanula's imaps.vim
+"               * Vim buffers: smarter keybindings for \(, \%( and ( 
+"                 (requires imaps.vim)
+"               * Visual-mode mappings for the brackets do not surround markers
+"                 (/placeholders) anymore, now they are discarded
+" Version 0.4.1:
+"		* Uses InsertAroundVisual() in order to work even when
+"                 'selection' is set to exclusive.
+" Version 0.4.0:
+"		* New option: b:cb_jump_on_close that specify weither the
+"                 mappings for the closing brackets are defined or not
+"                 default: true (1)
+" Version 0.3.9:
+"		* Updated to match changes within bracketing.base.vim
+" 		 -> Â¡xxx! mappings changed to !xxx!
+" 		 [encodings issue]
+" Version 0.3.8:
+"		* Updated to match changes within bracketing.base.vim
+" 		* Markers-mappings moved back to bracketing.base.vim
+" Version 0.3.7:
+"		* Brackets manipulation mappings for normal mode can be changed
+" 		  They are now <Plug> mappings.
+" 		  Same enhancement for mappings to Â¡mark! and Â¡jump!
+" Version 0.3.6c:
+"		* Change every 'normal' to 'normal!'
+" Version 0.3.6b:
+"		* address obfuscated for spammers
+" Version 0.3.6:
+"		* accept default value for b:usemarks
+" Version 0.3.5:
+"		* add continuation lines support ; cf 'cpoptions'
+" Version 0.3.4:
+"		* Works correctly when editing several files (like with 
+" 		"vim foo1.x foo2.x").
+" 		* ')' and '}' don't search for the end of the bracket when we
+" 		are within a comment.
+" Version 0.3.3:
+"		* Add support for \{, \(, \[, \<
+"               * Plus some functions to change the type of brackets and
+"               toggle backslashes before brackets.
+"               Inspired from AucTeX.vim.
+" Version 0.3.2:
+"		* Bugs fixed with {
+" Version 0.3.1:
+"		* Triggers.vim and help.vim used, but not required.
+" Version 0.3.0:
+"		* Pure VIM6
+" Version 0.2.1a:
+"		* Some little change with the requirements
+" Version 0.2.1:
+"		* Use b:usemarks in the mapping of curly-brackets
+" Version 0.2.0:
+"		* Lately, I've discovered (SR) Stephen Riehm's bracketing
+" 		macros and felt in love with the markers feature. So, here is
+" 		the ver 2.x based on his package.
+" 		I still bring an original feature : a centralized way to
+" 		customize these pairs regarding options specified within
+" 		the ftplugins.
+" 		Note that I planned to use this file with my customized
+" 		version of Stephan Riehm's file.
+" 
+" Options:      {{{1
 " 	(*) b:cb_bracket			: [ -> [ & ]
 "	(*) b:cb_cmp				: < -> < & >
 "	    could be customized thanks to b:cb_ltFn and b:cb_gtFn [ML_set.vim]
@@ -69,14 +115,22 @@
 "	(*) b:usemarks				: 
 "		indicates the wish to use the marking feature first defined by
 "		Stephan Riehm.
-"	}}}
+"	(*) b:cb_jump_on_close			: ), ], }
+"	        == 0  => no mappings for ), ] and }
+"	        == 1  => mappings for ), ] and } (default)
 "
-" Dependancies:	{{{
-" 	Triggers.vim		(&fileuptodate.vim), (Not required)
-" 	misc_map.vim		(MapNoContext()),    (required)
-" 	bracketing.base.vim	(¡mark! & ¡jump!)    (required)
+" Dependancies: {{{1
+" 	Triggers.vim		(Not required)
+" 	misc_map.vim		(required)
+" 	bracketing.base.vim	(required)
 " 	help.vim for vimrc_core.vim (:VimrcHelp)     (recognized and used.)
-" 	}}}
+"
+" Todo:         {{{1
+" 	(*) Option b:cb_double that defines weither we must hit '(' or '(('
+" 	(*) Support '\%(\)' for vim when imaps.vim is not installed
+" 	(*) Support '||', '\|\|' and '&&' (within eqnarray[*]) for LaTeX.
+"	(*) Systematically use b:usemarks for opening and closing
+" }}}1
 "===========================================================================
 "
 "======================================================================
@@ -84,95 +138,163 @@
 let s:cpo_save = &cpo
 set cpo&vim
 
+" Make sure imaps.vim, if installed, is loaded before this plugin
+if !exists("*IMAP")
+  runtime plugin/imaps.vim
+endif
 " ------------------------------------------------------------------
 " The main function that defines all the key-bindings. " {{{
 function! Brackets()
-  " [ & ]
-  if exists('b:cb_bracket') && b:cb_bracket
-    vnoremap <buffer> [ <esc>`>a]<esc>`<i[<esc>%
-"        imap <buffer> [ <C-V>[<C-V>]¡mark!<ESC>F]i
-    inoremap <buffer> [ <C-R>=<sid>EscapableBrackets('[','\<C-V\>[','\<C-V\>]')<cr>
-        nmap <buffer> [ viw[
-	nmap <buffer> <M-[> viw[
-	imap <buffer> <M-[> <esc><M-[>a
-    "inoremap <buffer> ] <esc>/]/<cr>a
+  " Code to toggle brackets-mappings if imaps.vim is installed {{{
+  " This permits to toogle the brackets-mappings when imap.vim is present on
+  " the system
+  if exists('*IMAP')
+    TRIGGER "let g:Imap_FreezeImap=0", "let g:Imap_FreezeImap=1" 
   endif
+  " imaps.vim special }}}
   "
-  " < & >
+  " [ & ] {{{
+  if exists('b:cb_bracket') && b:cb_bracket
+    if exists('*IMAP')
+      if &ft == 'tex'
+	call IMAP('\[', "\<C-R>=Insert_sqbracket(1)\<cr>", &ft)
+      endif
+      call IMAP('[', "\<C-R>=Insert_sqbracket(0)\<cr>", &ft)
+    else
+      inoremap <buffer> [ <C-R>=<sid>EscapableBrackets('[','\<C-V\>[','\<C-V\>]')<cr>
+    endif
+    if     1 == b:cb_bracket
+      vnoremap <buffer> <localleader>[ <c-\><c-n>@=Surround('[', ']', 0, 0, '%', 0)<cr>
+	  nmap <buffer> <localleader>[ viw<localleader>[
+	  nmap <buffer> <M-[> viw<localleader>[
+    elseif 2 == b:cb_bracket
+      vnoremap <buffer> [ <c-\><c-n>@=Surround('[', ']', 0, 0, '%', 0)<cr>
+	  nmap <buffer> [ viw[
+	  nmap <buffer> <M-[> viw[
+    endif
+	imap <buffer> <M-[> <esc><M-[>a
+  endif
+  " [ & ] }}}
+  "
+  " < & > {{{
   if exists('b:cb_cmp') && b:cb_cmp
-    imap <buffer> < <c-r>=Brkt_lt()<cr>
-    imap <buffer> > <c-r>=Brkt_gt()<cr>
-    vnoremap <buffer> < <esc>`>a><esc>`<i<<esc>`>ll
+    if exists('*IMAP')
+      call IMAP('<', "\<c-r>=Brkt_lt()\<cr>", &ft)
+      " if !exists('b:cb_ltFn') || 0==b:cb_ltFn
+	" call IMAP('\<', "\<c-r>=Insert_lt_gt(1)\<cr>", &ft)
+      " endif
+      call IMAP('>', "\<c-r>=Brkt_gt()\<cr>", &ft)
+    else
+      imap <buffer> < <c-r>=Brkt_lt()<cr>
+      imap <buffer> > <c-r>=Brkt_gt()<cr>
+    endif
+    vnoremap <buffer> < <c-\><c-n>@=Surround('<', '>', 0, 0, '`>ll', 0)<CR>
         "nmap <buffer> < viw<
 	nmap <buffer> <M-<> viw<
 	imap <buffer> <M-<> <esc><M-<>a
   endif
+  " < & > }}}
   "
-  " { & }
+  " { & } {{{
   if exists('b:cb_acco') && b:cb_acco
-    if &syntax == "tex"
-      inoremap <buffer> { <C-R>=<sid>EscapableBrackets('{','{','}')<cr>
+    if exists('*IMAP')
+      if &ft == 'tex'
+	call IMAP('{', "\<C-R>=Insert_clbracket(0,0)\<cr>", &ft)
+	" Required or not ?
+	" call IMAP('\{', "\<C-R>=Insert_clbracket(1,0)\<cr>", &ft)
+      else
+	call IMAP('{', "\<C-R>=Insert_clbracket(0,1)\<cr>", &ft)
+	call IMAP('#{', "\<C-R>=Insert_clbracket(0,0)\<cr>", &ft)
+      endif
     else
-      inoremap <buffer> { <C-R>=<sid>Def_Map1('{','{\<cr\>}\<esc\>O','{\<cr\>}¡mark!\<esc\>O')<cr>
-"      inoremap <buffer> { <C-R>=<sid>EscapableBracketsLn('{','{','}')<cr>
-      inoremap <buffer> #{ <C-R>=<sid>Def_Map1('#{','{}\<esc\>i','{}¡mark!\<esc\>?{\<cr\>a')<cr>
+      if &syntax == "tex"
+	inoremap <buffer> { <C-R>=<sid>EscapableBrackets('{','{','}')<cr>
+      else
+	" inoremap <buffer> { <C-R>=<sid>EscapableBracketsLn('{','{','}')<cr>
+	inoremap <buffer>  { <C-R>=Smart_insert_seq1( '{','{\<cr\>}\<esc\>O','{\<cr\>}!mark!\<esc\>O')<cr>
+	inoremap <buffer> #{ <C-R>=Smart_insert_seq1('#{','{}\<esc\>i','{}!mark!\<esc\>F{a')<cr>
+      endif
     endif
-    vnoremap <buffer> { <esc>`>a}<esc>`<i{<esc>%
+    vnoremap <buffer> { <c-\><c-n>@=Surround('{', '}', 0, 0, '%', 0)<cr>
         nmap <buffer> { viw{
-        ""nmap <buffer> <M-{> viw{
-        ""imap <buffer> <M-{> <esc><M-{>a
-    nnoremap <buffer> } /}\\|\.\\|\$\\|&\\|]<CR>a
-    ""imap <buffer> ¡find}! <esc>}
-    ""inoremap <buffer> } <c-r>=MapNoContext('}',BuildMapSeq('¡find}!'))<cr>
-        imap <buffer> } <C-R>=MapNoContext('}', '\<c-o\>}\<left\>')<CR>
+    if !exists('b:cb_jump_on_close') || b:cb_jump_on_close
+      nnoremap <buffer> } :call search('}\\|\.\\|&\\|]\\|\$')<CR>a
+      ""inoremap <buffer> } <c-r>=MapNoContext('}',BuildMapSeq('!find}!'))<cr>
+      " Next line does not work well (vim 6.1.362)
+      inoremap <buffer> } <C-R>=MapNoContext('}', '\<c-o\>}\<left\>')<CR>
+    endif
   endif
+  " { & } }}}
   "
-  " ( & )
+  " ( & ) {{{
   if exists('b:cb_parent') && b:cb_parent
-    inoremap <buffer> ( <C-R>=<sid>EscapableBrackets('(','(',')')<cr>
-     noremap <buffer> ) /)/<cr>a
-        imap <buffer> ) <C-R>=MapNoContext(')', '\<c-o\>/)/e+1/\<cr\>')<CR>
-    vnoremap <buffer> ( <esc>`>a)<esc>`<i(<esc>%
-        nmap <buffer> ( viw(
-        nmap <buffer> <M-(> viw(
-        imap <buffer> <M-(> <esc><M-(>a
+    if exists('*IMAP')
+      if &ft == 'vim'
+	" context Ã  bloquer comments only
+	call IMAP('\(', "\<C-R>=Insert_rdbracket(1)\<cr>", &ft)
+	call IMAP('\%(', "\<C-R>=Insert_rdbracket(2)\<cr>", &ft)
+      elseif &ft == 'tex'
+	call IMAP('\(', "\<C-R>=Insert_rdbracket(1)\<cr>", &ft)
+      endif
+      call IMAP('(', "\<C-R>=Insert_rdbracket(0)\<cr>", &ft)
+    else
+      inoremap <buffer> ( <C-R>=<sid>EscapableBrackets('(','(',')')<cr>
+    endif
+    if !exists('b:cb_jump_on_close') || b:cb_jump_on_close
+      noremap <buffer> ) :call search(')')<cr>a
+	 imap <buffer> ) <C-R>=MapNoContext(')', '\<c-o\>/)/e+1/\<cr\>')<CR>
+	 " inoremap <buffer> ) <C-R>=MapNoContext(')', '\<esc\>:call search(")")\<cr\>a')<CR>
+    endif
+    vnoremap <buffer> (        <c-\><c-n>@=Surround('(', ')', 0, 0, '%', 0)<cr>
+    nnoremap <buffer> (     viw<c-\><c-n>@=Surround('(', ')', 0, 0, '%', 0)<cr>
+    nnoremap <buffer> <M-(> viw<c-\><c-n>@=Surround('(', ')', 0, 0, '%', 0)<cr>
+        imap <buffer> <M-(>    <esc><M-(>a
   endif
+  " ( & ) }}}
 
-  " $ & $
+  " $ & $ {{{
   if exists('b:cb_mathMode') && b:cb_mathMode
-    inoremap <buffer> $ <c-r>=Insert_LaTeX_Dollar()<cr>
-    vnoremap <buffer> $$ <ESC>`>a$<ESC>`<i$<ESC>`>ll
+    if exists('*IMAP')
+      call IMAP( '$', "\<c-r>=Insert_LaTeX_TwoDollars()\<cr>", &ft)
+      call IMAP( '\$', '\$', &ft)
+    else
+      inoremap <buffer> $ <c-r>=Insert_LaTeX_Dollar()<cr>
+    endif
+    vnoremap <buffer> $$ <c-\><c-n>@=Surround('$', '$', 0, 0, '`>ll', 0)<cr>
 	nmap <buffer> $$ viw$$
 	nmap <buffer> <M-$> viw$$
 	imap <buffer> <M-$> <esc><M-$>
   endif
+  " $ & $ }}}
   "
-  " quotes
+  " quotes {{{
   if exists('b:cb_quotes') && b:cb_quotes
     inoremap <buffer> ' <c-r>=Brkt_quote()<cr>
-    vnoremap <buffer> '' <esc>`>a'<esc>`<i'<esc>`>ll
+    vnoremap <buffer> '' <c-\><c-n>@=Surround("'", "'", 0, 0, '`>ll', 0)<cr>
         nmap <buffer> ''    viw''
 	nmap <buffer> <M-'> viw''
 	" add quotes around the word under the cursor
 	imap <buffer> <M-'> <esc><M-'>a
   endif
+  " quotes }}}
   "
-  " double-quotes
+  " double-quotes {{{
   if exists('b:cb_Dquotes') && b:cb_Dquotes
     inoremap <buffer> " <c-r>=Brkt_Dquote()<cr>
-    vnoremap <buffer> "" <esc>`>a"<esc>`<i"<esc>`>ll
+    vnoremap <buffer> "" <c-\><c-n>@=Surround('"', '"', 0, 0, '`>ll', 0)<cr>
 	nmap <buffer> ""    viw""
 	nmap <buffer> <M-"> viw""
-	" add doqutes around the word under the cursor
+	" add dquotes around the word under the cursor
 	imap <buffer> <M-"> <esc><M-">a
   endif
+  " double-quotes }}}
 endfunction " }}}
 
 if !exists('b:usemarks') | let b:usemarks=1 | endif
 
 " Defines a command and the mode switching mappings (with <F9>) {{{
 if !exists("*Trigger_Function")
-  runtime plugin/Triggers.vim
+  runtime plugin/Triggers.vim macros/Triggers.vim
 endif
 if exists("*Trigger_Function")
   au Bufenter * :call <SID>LoadBrackets()
@@ -180,8 +302,8 @@ if exists("*Trigger_Function")
 
   function! s:LoadBrackets()
     if !exists('b:usemarks') | let b:usemarks=1 | endif
-    if exists("b:loaded_comman_bracket_buff") | return | endif
-    let b:loaded_comman_bracket_buff = 1
+    if exists("b:loaded_common_bracket_buff") | return | endif
+    let b:loaded_common_bracket_buff = 1
     silent call Trigger_Function('<F9>', 'Brackets', s:scriptname,1,1)
     imap <buffer> <F9> <SPACE><ESC><F9>a<BS>
     silent call Trigger_DoSwitch('<M-F9>',
@@ -192,29 +314,22 @@ endif
 " }}}
 "======================================================================
 " Global definitions : functions & mappings
-if exists("g:loaded_common_brackets_vim") 
+if exists("g:loaded_common_brackets") 
+      \ && !exists('g:force_reload_common_brackets')
   let &cpo = s:cpo_save
   finish 
 endif
-let g:loaded_common_brackets_vim = 1
+let g:loaded_common_brackets = 1
 
 " ===========================================================================
 " Tool functions {{{
-" In order to define things like '{'
-function! s:Def_Map1(key,expr1,expr2) " {{{
-  if exists('b:usemarks') && b:usemarks
-    return "\<c-r>=MapNoContext('".a:key."',BuildMapSeq('".a:expr2."'))\<cr>"
-  else
-    return "\<c-r>=MapNoContext('".a:key."', '".a:expr1."')\<cr>"
-  endif
-endfunction " }}}
 
 " s:EscapableBrackets, and s:EscapableBracketsLn are two different functions
-" in order to achieve a little optimisation
+" in order to acheive a little optimisation
 function! s:EscapableBrackets(key, left, right) " {{{
   let r = ((getline('.')[col('.')-2] == '\') ? '\\\\' : "") . a:right
   let expr1 = a:left.r.'\<esc\>i'
-  let expr2 = a:left.r.'¡mark!\<esc\>F'.a:key.'a'
+  let expr2 = a:left.r.'!mark!\<esc\>F'.a:key.'a'
   if exists('b:usemarks') && b:usemarks
     return "\<c-r>=MapNoContext('".a:key."',BuildMapSeq('".expr2."'))\<cr>"
   else
@@ -225,18 +340,23 @@ endfunction " }}}
 function! s:EscapableBracketsLn(key, left, right) " {{{
   let r = ((getline('.')[col('.')-2] == '\') ? '\\\\' : "") . a:right
   let expr1 = a:left.'\<cr\>'.r.'\<esc\>O'
-  let expr2 = a:left.'\<cr\>'.r.'¡mark!\<esc\>O'
+  let expr2 = a:left.'\<cr\>'.r.'!mark!\<esc\>O'
   if exists('b:usemarks') && b:usemarks
     return "\<c-r>=MapNoContext('".a:key."',BuildMapSeq('".expr2."'))\<cr>"
   else
     return "\<c-r>=MapNoContext('".a:key."', '".expr1."')\<cr>"
   endif
 endfunction " }}}
+
 " Tool functions }}}
 " ===========================================================================
 " The core functions for the previous mappings {{{
 " If a backslash precede the current cursor position, insert one dollar,
 " and two otherwise.
+function! Insert_LaTeX_TwoDollars() " {{{
+  " return "\<c-v>$\<c-v>$\<c-r>=Marker_Txt()\<cr>\<esc>F$i"
+  return IMAP_PutTextWithMovement(Smart_insert_seq2('$', '$<++>$!mark!'))
+endfunction " }}}
 function! Insert_LaTeX_Dollar() " {{{
   if getline('.')[col('.')-2] == '\'
     return '$'
@@ -245,21 +365,67 @@ function! Insert_LaTeX_Dollar() " {{{
   endif
 endfunction " }}}
 
-" Trick : to be switchable with Triggers.vim
+" Insert the various kind of brackets {{{
+function! Insert_rdbracket(esc)
+  return s:Insert_bracket('(', ')', a:esc, 0)
+endfunction
+
+function! Insert_sqbracket(esc)
+  return s:Insert_bracket('[', ']', a:esc, 0)
+endfunction
+
+function! Insert_clbracket(esc, nl)
+  return s:Insert_bracket('{', '}', a:esc, a:nl)
+endfunction
+
+function! Insert_lt_gt(esc)
+  return s:Insert_bracket('<', '>', a:esc, 0)
+endfunction
+" }}}
+
+" Function: s:Insert_bracket(obrkt, cbrkt, esc, nl)  {{{
+" Internal function.
+" {obrkt}:	open bracket
+" {cbrkt}:	close bracket
+" {esc}:	escaped version 0:none, 1:\, 2:\%
+" {nm}:		new line between {obrkt} and {cbrkt}
+function! s:Insert_bracket(obrkt, cbrkt, esc, nl) 
+  " Generic function used by the others
+  if     a:esc == 0 | let open = ''   | let close = ''
+  elseif a:esc == 1 | let open = '\'  | let close = '\'
+  elseif a:esc == 2 | let open = '\%' | let close = '\'
+  else
+    echoerr "Case not handled (yet)!"
+  endif
+  let key = open . a:obrkt
+  let middle = a:nl ? "\<cr><++>\<cr>" : '<++>'
+  let expr = key . middle . close . a:cbrkt .'!mark!'
+  if &ft == "vim" && a:esc " expand only within strings
+    return IMAP_PutTextWithMovement(Smart_insert_seq2(key,expr, 'string\|PatSep'))
+  else
+    return IMAP_PutTextWithMovement(Smart_insert_seq2(key,expr))
+  endif
+endfunction "}}}
+
 " Calls a custom function or returns <> regarding the options
 function! Brkt_lt() " {{{
   if exists('b:cb_ltFn')
-    return "\<C-R>=" . b:cb_ltFn . "\<CR>"
+    return "\<C-R>=InsertSeq('<'," . b:cb_ltFn . ")\<CR>"
   else
-    return <SID>EscapableBrackets('<', '\<C-V\><', '\<C-V\>>')
+    if exists('*IMAP')
+      return Insert_lt_gt(0)
+    else
+      " Is it even useful ?
+      return <SID>EscapableBrackets('<', '\<C-V\><', '\<C-V\>>')
+    endif
   endif
 endfunction " }}}
 
-" Trick : to be switchable with Triggers.vim
 " Calls a custom function, or search for the next '>', or return '>'
 " regarding the options.
 function! Brkt_gt() " {{{
-  if exists('b:cb_gtFn')        | return "\<C-R>=" . b:cb_gtFn . "\<CR>"
+  if exists('b:cb_gtFn')        | return "\<C-R>=InsertSeq('>', " . b:cb_gtFn . ")\<CR>"
+                                " return "\<C-R>=" . b:cb_gtFn . "\<CR>"
   elseif exists('b:cb_gtFind')  | return "\<esc>/>/\<cr>a"
   else                          | return ">"
   endif
@@ -295,7 +461,8 @@ function! Brkt_Dquote() " {{{
     endif
   else
     if exists('b:cb_DqFn')
-      return "\<C-R>=" . b:cb_DqFn . "\<CR>"
+      " TEST: OK sans imaps.vim
+      return "\<C-R>=InsertSeq('\"', escape(" . b:cb_DqFn . ", '\'))\<CR>"
     elseif exists("b:usemarks") && b:usemarks == 1
       return "\<C-V>\"\<C-V>\"\<c-r>=Marker_Txt()\<cr>\<ESC>F\"i"
     else 
@@ -341,6 +508,11 @@ else " {{{
   endif
   noremap <silent> <Plug>ChangeToCurlyBrackets	:call <SID>ChangeCurly()<CR>
 
+  if !hasmapto('<Plug>ChangeToAngleBrackets')
+    map <M-b>{		<Plug>ChangeToAngleBrackets
+  endif
+  noremap <silent> <Plug>ChangeToAngleBrackets	:call <SID>ChangeAngle()<CR>
+
   if !hasmapto('<Plug>ToggleBackslash')
     map <M-b>\		<Plug>ToggleBackslash
   endif
@@ -366,27 +538,44 @@ function! s:DeleteBrackets() " {{{
 endfunction " }}}
 
 function! s:ChangeCurly() " {{{
+  let s_matchpairs = &matchpairs
+  set matchpairs+=<:>,(:),{:},[:]
   let s:c = getline(line("."))[col(".") - 1]
-  if s:c == '[' || s:c == '('
-    exe "normal! i\<Esc>l%i\<Esc>lr}``r{"
-  elseif s:c == ']' || s:c == ')'
-    exe "normal! %i\<Esc>l%i\<Esc>lr}``r{%"
+  if s:c =~ '[\|(\|<'     | normal! %r}``r{
+  elseif s:c =~ ']\|)\|>' | normal! %%r}``r{%
   endif
-endfunction " }}}
-
-function! s:ChangeRound() " {{{
-  let s:c = getline(line("."))[col(".") - 1]
-  if s:c =~ '[\|{'     | normal! %r)``r(
-  elseif s:c =~ ']\|}' | normal! %%r)``r(%
-  endif
+  let &matchpairs = s_matchpairs
 endfunction " }}}
 
 function! s:ChangeSquare() " {{{ " {{{
+  let s_matchpairs = &matchpairs
+  set matchpairs+=<:>,(:),{:},[:]
   let s:c = getline(line("."))[col(".") - 1]
-  if s:c =~ '(\|{'     | normal! %r]``r[
-  elseif s:c =~ ')\|}' | normal! %%r]``r[%
+  if s:c =~ '[(<{]'     | normal! %r]``r[
+  elseif s:c =~ '[)}>]' | normal! %%r]``r[%
   endif
+  let &matchpairs = s_matchpairs
 endfunction " }}} " }}}
+
+function! s:ChangeAngle() " {{{ " {{{
+  let s_matchpairs = &matchpairs
+  set matchpairs+=<:>,(:),{:},[:]
+  let s:c = getline(line("."))[col(".") - 1]
+  if s:c =~ '[[({]'       | normal! %r>``r<
+  elseif s:c =~ ')\|}\|]' | normal! %%r>``r<``
+  endif
+  let &matchpairs = s_matchpairs
+endfunction " }}} " }}}
+
+function! s:ChangeRound() " {{{
+  let s_matchpairs = &matchpairs
+  set matchpairs+=<:>,(:),{:},[:]
+  let s:c = getline(line("."))[col(".") - 1]
+  if s:c =~ '[\|{\|<'     | normal! %r)``r(
+  elseif s:c =~ ']\|}\|>' | normal! %%r)``r(%
+  endif
+  let &matchpairs = s_matchpairs
+endfunction " }}}
 
 function! s:ToggleBackslash() " {{{
   let s:b = getline(line("."))[col(".") - 2]
@@ -406,17 +595,18 @@ function! BracketsManipMode(starting_key) " {{{
   redraw! " clear the msg line
   while 1
     echohl StatusLineNC
-    echo "\r-- brackets manipulation mode (/x/(/[/{/\\/<F1>/q/)"
+    echo "\r-- brackets manipulation mode (/x/(/[/{/</\\/<F1>/q/)"
     echohl None
     let key = getchar()
     let bracketsManip=nr2char(key)
-    if (-1 != stridx("x([{\\q",bracketsManip)) || 
+    if (-1 != stridx("x([{<\\q",bracketsManip)) || 
 	  \ (key =~ "\\(\<F1>\\|\<Del>\\)")
       if     bracketsManip == "x"      || key == "\<Del>" 
 	call s:DeleteBrackets() | redraw! | return ''
       elseif bracketsManip == "("      | call s:ChangeRound()
       elseif bracketsManip == "["      | call s:ChangeSquare()
       elseif bracketsManip == "{"      | call s:ChangeCurly()
+      elseif bracketsManip == "<"      | call s:ChangeAngle()
       elseif bracketsManip == "\\"     | call s:ToggleBackslash()
       elseif key == "\<F1>"
 	redraw! " clear the msg line
@@ -424,6 +614,7 @@ function! BracketsManipMode(starting_key) " {{{
 	echo " *(* -- change the current brackets pair to round brackets ()\n"
 	echo " *[* -- change the current brackets pair to square brackets []\n"
 	echo " *{* -- change the current brackets pair to curly brackets {}\n"
+	echo " *<* -- change the current brackets pair to angle brackets <>\n"
 	echo " *\\* -- toggle a backslash before the current brackets pair\n"
 	echo " *q* -- quit the mode\n"
 	continue
@@ -455,11 +646,8 @@ endfunction " }}}
 "     Unfortunately several of these are not accessible from the french
 "     keyboard layout -> <M-{>, <M-[>, <M-`>, etc
 " (*) nmap <buffer> " ... is a very bad idea, hence nmap ""
-" (*) ¡mark! and ¡jump! can't be called yet from MapNoContext().
+" (*) !mark! and !jump! can't be called yet from MapNoContext().
 "     but <c-r>=Marker_Txt()<cr> can.
-"
-" Todo:
-" (*) Systematically use b:usemarks for opening and closing
 " }}}
 " ===========================================================================
 " vim600: set fdm=marker:
